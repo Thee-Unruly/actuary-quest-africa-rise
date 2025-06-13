@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Coins, Users, BookOpen, Calculator, Target, MessageSquare } from "lucide-react";
+import { Trophy, Coins, Users, BookOpen, Calculator, Target, MessageSquare, TrendingUp } from "lucide-react";
 import { QuestModule } from "@/components/QuestModule";
 import { VirtualSandbox } from "@/components/VirtualSandbox";
 import { CommunityHub } from "@/components/CommunityHub";
@@ -63,8 +62,8 @@ const Index = () => {
               Learning Quests
             </TabsTrigger>
             <TabsTrigger value="sandbox" className="flex items-center gap-2">
-              <Calculator className="w-4 h-4" />
-              Sandbox
+              <TrendingUp className="w-4 h-4" />
+              News & Trends
             </TabsTrigger>
             <TabsTrigger value="community" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
@@ -168,7 +167,7 @@ const Index = () => {
             <QuestModule userStats={userStats} setUserStats={setUserStats} />
           </TabsContent>
 
-          {/* Virtual Sandbox Tab */}
+          {/* News & Trends Tab (formerly Sandbox) */}
           <TabsContent value="sandbox">
             <VirtualSandbox userStats={userStats} setUserStats={setUserStats} />
           </TabsContent>

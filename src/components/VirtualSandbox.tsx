@@ -2,12 +2,8 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { toast } from "sonner";
+import { BookOpen, TrendingUp, ExternalLink, Calendar, Users } from "lucide-react";
 
 interface VirtualSandboxProps {
   userStats: {
@@ -20,277 +16,261 @@ interface VirtualSandboxProps {
 }
 
 export const VirtualSandbox = ({ userStats, setUserStats }: VirtualSandboxProps) => {
-  const [premiumRate, setPremiumRate] = useState([1500]);
-  const [deductible, setDeductible] = useState([500]);
-  const [results, setResults] = useState<any>(null);
-  const [isRunning, setIsRunning] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
 
-  const runSimulation = async () => {
-    setIsRunning(true);
-    
-    // Simulate calculation delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const premium = premiumRate[0];
-    const deduct = deductible[0];
-    
-    // Simplified actuarial calculations
-    const expectedClaims = 1200; // Average claims cost per driver
-    const fixedCosts = 200; // Administrative costs
-    const expectedProfit = premium - expectedClaims - fixedCosts;
-    const lossRatio = (expectedClaims / premium) * 100;
-    const profitMargin = (expectedProfit / premium) * 100;
-    
-    // Generate sample data for 100 drivers
-    const drivers = Array.from({ length: 100 }, (_, i) => {
-      const hasClaim = Math.random() < 0.15; // 15% claim rate
-      const claimAmount = hasClaim ? Math.random() * 5000 + 500 : 0;
-      const actualProfit = premium - claimAmount - fixedCosts - (hasClaim ? deduct : 0);
-      
-      return {
-        driver: i + 1,
-        premium,
-        claimAmount: Math.round(claimAmount),
-        profit: Math.round(actualProfit),
-        hasClaim
-      };
-    });
-    
-    const totalPremiums = drivers.reduce((sum, d) => sum + d.premium, 0);
-    const totalClaims = drivers.reduce((sum, d) => sum + d.claimAmount, 0);
-    const totalProfit = drivers.reduce((sum, d) => sum + d.profit, 0);
-    
-    // Chart data for visualization
-    const chartData = [
-      { name: 'Premiums Collected', value: totalPremiums, fill: '#22c55e' },
-      { name: 'Claims Paid', value: totalClaims, fill: '#ef4444' },
-      { name: 'Net Profit', value: totalProfit, fill: totalProfit > 0 ? '#3b82f6' : '#f59e0b' }
-    ];
-    
-    setResults({
-      totalPremiums,
-      totalClaims,
-      totalProfit,
-      lossRatio: (totalClaims / totalPremiums) * 100,
-      profitMargin: (totalProfit / totalPremiums) * 100,
-      chartData,
-      driversWithClaims: drivers.filter(d => d.hasClaim).length
-    });
-    
-    // Calculate score based on performance
-    let score = 50; // Base score
-    if (totalProfit > 0) score += 30;
-    if (lossRatio < 70) score += 20;
-    if (lossRatio > 90) score -= 20;
-    
-    score = Math.max(0, Math.min(100, score));
-    
-    if (score > userStats.sandboxScore) {
-      setUserStats({
-        ...userStats,
-        sandboxScore: score
-      });
-      toast.success(`New high score: ${score}%! 🎉`);
+  const topics = {
+    "IFRS 17": {
+      description: "The new international accounting standard for insurance contracts",
+      articles: [
+        {
+          title: "IFRS 17 Implementation Timeline Extended to 2025",
+          summary: "Key updates on the extended implementation timeline and what insurers need to know",
+          link: "https://example.com/ifrs17-timeline",
+          date: "2024-06-10",
+          source: "Insurance Journal"
+        },
+        {
+          title: "Practical Guide to IFRS 17 Transition Adjustments",
+          summary: "Step-by-step approach to handling transition adjustments under the new standard",
+          link: "https://example.com/ifrs17-transition",
+          date: "2024-06-08",
+          source: "KPMG Insights"
+        },
+        {
+          title: "Technology Solutions for IFRS 17 Compliance",
+          summary: "How insurtech is helping companies prepare for IFRS 17 requirements",
+          link: "https://example.com/ifrs17-tech",
+          date: "2024-06-05",
+          source: "Actuarial Post"
+        }
+      ]
+    },
+    "Climate Risk": {
+      description: "Emerging trends in climate risk modeling and actuarial applications",
+      articles: [
+        {
+          title: "AI-Powered Climate Risk Models Transform Insurance Pricing",
+          summary: "Machine learning algorithms are revolutionizing how insurers assess climate-related risks",
+          link: "https://example.com/climate-ai",
+          date: "2024-06-12",
+          source: "Risk Management Magazine"
+        },
+        {
+          title: "TCFD Reporting Requirements for Insurance Companies",
+          summary: "New climate disclosure requirements and their impact on actuarial valuations",
+          link: "https://example.com/tcfd-insurance",
+          date: "2024-06-09",
+          source: "Environmental Finance"
+        },
+        {
+          title: "Catastrophe Modeling in the Era of Extreme Weather",
+          summary: "How actuaries are adapting cat models for increasingly unpredictable weather patterns",
+          link: "https://example.com/cat-modeling",
+          date: "2024-06-07",
+          source: "Casualty Actuarial Society"
+        }
+      ]
+    },
+    "Digital Transformation": {
+      description: "Technology adoption and digital innovation in actuarial science",
+      articles: [
+        {
+          title: "Blockchain Applications in Insurance Claim Processing",
+          summary: "How distributed ledger technology is streamlining claims and reducing fraud",
+          link: "https://example.com/blockchain-claims",
+          date: "2024-06-11",
+          source: "InsurTech Weekly"
+        },
+        {
+          title: "Real-Time Data Analytics in Underwriting",
+          summary: "The shift from traditional to real-time risk assessment using IoT and telematics",
+          link: "https://example.com/realtime-underwriting",
+          date: "2024-06-06",
+          source: "Digital Insurance"
+        },
+        {
+          title: "API-First Approach to Actuarial Systems",
+          summary: "Building flexible, scalable actuarial platforms for the digital age",
+          link: "https://example.com/api-actuarial",
+          date: "2024-06-04",
+          source: "Actuarial Review"
+        }
+      ]
+    },
+    "Regulatory Updates": {
+      description: "Latest regulatory changes affecting actuarial practice globally",
+      articles: [
+        {
+          title: "Solvency II Review: Key Changes for 2024",
+          summary: "European regulators announce significant updates to capital requirements",
+          link: "https://example.com/solvency-ii-2024",
+          date: "2024-06-13",
+          source: "European Insurance Journal"
+        },
+        {
+          title: "US State Insurance Reforms Impact Pricing Models",
+          summary: "How new state regulations are changing actuarial assumptions and methodologies",
+          link: "https://example.com/us-insurance-reforms",
+          date: "2024-06-10",
+          source: "NAIC Quarterly"
+        },
+        {
+          title: "Global Pension Reform Trends and Actuarial Implications",
+          summary: "Cross-border analysis of pension system changes and their actuarial impact",
+          link: "https://example.com/pension-reforms",
+          date: "2024-06-08",
+          source: "Pension & Investments"
+        }
+      ]
+    },
+    "Machine Learning": {
+      description: "AI and ML applications transforming actuarial modeling",
+      articles: [
+        {
+          title: "Neural Networks in Mortality Forecasting",
+          summary: "Deep learning models outperform traditional life tables in longevity prediction",
+          link: "https://example.com/neural-mortality",
+          date: "2024-06-12",
+          source: "Journal of Actuarial Practice"
+        },
+        {
+          title: "Explainable AI in Insurance Pricing",
+          summary: "Balancing model accuracy with regulatory transparency requirements",
+          link: "https://example.com/explainable-ai",
+          date: "2024-06-09",
+          source: "AI in Insurance"
+        },
+        {
+          title: "Automated Claim Fraud Detection Using ML",
+          summary: "How machine learning is revolutionizing fraud prevention in insurance",
+          link: "https://example.com/ml-fraud-detection",
+          date: "2024-06-07",
+          source: "Fraud Magazine"
+        }
+      ]
     }
-    
-    setIsRunning(false);
   };
 
-  const getPerformanceFeedback = () => {
-    if (!results) return null;
-    
-    const { lossRatio, profitMargin } = results;
-    
-    if (profitMargin > 10) {
-      return {
-        type: "success",
-        message: "Excellent! Your pricing strategy is profitable and sustainable.",
-        icon: <TrendingUp className="w-5 h-5" />
-      };
-    } else if (profitMargin > 0) {
-      return {
-        type: "warning", 
-        message: "Good start! Consider slight adjustments to improve profitability.",
-        icon: <AlertCircle className="w-5 h-5" />
-      };
-    } else {
-      return {
-        type: "error",
-        message: "Your pricing is too low! Increase premiums or deductibles to avoid losses.",
-        icon: <TrendingDown className="w-5 h-5" />
-      };
-    }
-  };
+  const topicKeys = Object.keys(topics);
 
-  const feedback = getPerformanceFeedback();
+  if (selectedTopic && topics[selectedTopic as keyof typeof topics]) {
+    const topic = topics[selectedTopic as keyof typeof topics];
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-blue-500" />
+                  {selectedTopic}
+                </CardTitle>
+                <CardDescription>{topic.description}</CardDescription>
+              </div>
+              <Button variant="outline" onClick={() => setSelectedTopic(null)}>
+                Back to Topics
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
+
+        <div className="grid grid-cols-1 gap-6">
+          {topic.articles.map((article, index) => (
+            <Card key={index} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg mb-2">{article.title}</CardTitle>
+                    <CardDescription className="mb-3">{article.summary}</CardDescription>
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {article.date}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        {article.source}
+                      </div>
+                    </div>
+                  </div>
+                  <Button size="sm" className="ml-4" asChild>
+                    <a href={article.link} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="w-4 h-4 mr-1" />
+                      Read More
+                    </a>
+                  </Button>
+                </div>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calculator className="w-5 h-5 text-blue-500" />
-            Virtual Actuarial Sandbox
+            <TrendingUp className="w-5 h-5 text-blue-500" />
+            Actuarial News & Trends
           </CardTitle>
           <CardDescription>
-            Experiment with insurance pricing for 100 virtual drivers and see the financial impact
+            Stay updated with the latest developments in actuarial science, regulations, and industry trends
           </CardDescription>
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Controls */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Pricing Controls</CardTitle>
-            <CardDescription>Adjust variables and run the simulation</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label className="text-base font-medium">Annual Premium per Driver</Label>
-              <p className="text-sm text-gray-600 mb-3">
-                Higher premiums increase revenue but may reduce customer acquisition
-              </p>
-              <Slider
-                value={premiumRate}
-                onValueChange={setPremiumRate}
-                max={3000}
-                min={800}
-                step={50}
-                className="mt-2"
-              />
-              <div className="text-center mt-2 font-bold text-xl text-blue-600">
-                ${premiumRate[0].toLocaleString()}
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-base font-medium">Deductible Amount</Label>
-              <p className="text-sm text-gray-600 mb-3">
-                Higher deductibles reduce claim costs but may impact customer satisfaction
-              </p>
-              <Slider
-                value={deductible}
-                onValueChange={setDeductible}
-                max={2000}
-                min={250}
-                step={50}
-                className="mt-2"
-              />
-              <div className="text-center mt-2 font-bold text-xl text-green-600">
-                ${deductible[0].toLocaleString()}
-              </div>
-            </div>
-
-            <Button 
-              onClick={runSimulation} 
-              disabled={isRunning}
-              className="w-full bg-blue-500 hover:bg-blue-600"
-              size="lg"
-            >
-              {isRunning ? "Running Simulation..." : "Run Simulation"}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Results */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Simulation Results</CardTitle>
-            <CardDescription>
-              Financial outcomes for your pricing strategy
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {results ? (
-              <div className="space-y-6">
-                {/* Key Metrics */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      ${results.totalPremiums.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-600">Total Premiums</div>
-                  </div>
-                  
-                  <div className="text-center p-3 bg-red-50 rounded-lg">
-                    <div className="text-2xl font-bold text-red-600">
-                      ${results.totalClaims.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-600">Claims Paid</div>
-                  </div>
-                  
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className={`text-2xl font-bold ${results.totalProfit > 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                      ${results.totalProfit.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-600">Net Profit</div>
-                  </div>
-                  
-                  <div className="text-center p-3 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {results.driversWithClaims}
-                    </div>
-                    <div className="text-sm text-gray-600">Drivers with Claims</div>
-                  </div>
-                </div>
-
-                {/* Performance Indicators */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {topicKeys.map((topicKey) => {
+          const topic = topics[topicKey as keyof typeof topics];
+          return (
+            <Card key={topicKey} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedTopic(topicKey)}>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center justify-between">
+                  {topicKey}
+                  <Badge variant="secondary">{topic.articles.length} articles</Badge>
+                </CardTitle>
+                <CardDescription className="mb-4">{topic.description}</CardDescription>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span>Loss Ratio:</span>
-                    <Badge variant={results.lossRatio < 70 ? "default" : results.lossRatio < 85 ? "secondary" : "destructive"}>
-                      {results.lossRatio.toFixed(1)}%
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Profit Margin:</span>
-                    <Badge variant={results.profitMargin > 5 ? "default" : results.profitMargin > 0 ? "secondary" : "destructive"}>
-                      {results.profitMargin.toFixed(1)}%
-                    </Badge>
+                  <div className="text-sm font-medium text-gray-700">Latest:</div>
+                  <div className="text-sm text-gray-600 line-clamp-2">
+                    {topic.articles[0].title}
                   </div>
                 </div>
-
-                {/* AI Feedback */}
-                {feedback && (
-                  <div className={`p-4 rounded-lg flex items-start gap-3 ${
-                    feedback.type === 'success' ? 'bg-green-50 border border-green-200' :
-                    feedback.type === 'warning' ? 'bg-yellow-50 border border-yellow-200' :
-                    'bg-red-50 border border-red-200'
-                  }`}>
-                    <div className={
-                      feedback.type === 'success' ? 'text-green-600' :
-                      feedback.type === 'warning' ? 'text-yellow-600' :
-                      'text-red-600'
-                    }>
-                      {feedback.icon}
-                    </div>
-                    <p className="text-sm">{feedback.message}</p>
-                  </div>
-                )}
-
-                {/* Simple Chart */}
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={results.chartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']} />
-                      <Bar dataKey="value" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-12 text-gray-500">
-                <Calculator className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Run a simulation to see results</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="outline">
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Explore Topic
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
+        <CardHeader>
+          <CardTitle className="text-lg">Industry Insights</CardTitle>
+          <CardDescription>
+            Quick facts and trends shaping the actuarial profession
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white p-4 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">75%</div>
+              <div className="text-sm text-gray-600">of insurers are investing in AI and ML for risk assessment</div>
+            </div>
+            <div className="bg-white p-4 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">$2.1T</div>
+              <div className="text-sm text-gray-600">global insurance market size expected by 2025</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
