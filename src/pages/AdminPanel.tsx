@@ -22,15 +22,19 @@ export default function AdminPanel() {
     (profile?.role === "admin") ||
     (user?.email && user.email.toLowerCase() === "admin@gmail.com");
 
-  // Extra debug info
-  console.log("AdminPanel: user", user);
-  console.log("AdminPanel: profile", profile);
-  console.log("AdminPanel: loading", loading);
-  console.log("AdminPanel: isAdmin", isAdmin);
+  // Debug logging
+  console.log("AdminPanel Debug:", {
+    user: user?.email,
+    profile,
+    loading,
+    isAdmin,
+    profileRole: profile?.role
+  });
 
   useEffect(() => {
     // If not loading, and not an admin, navigate away immediately.
     if (!loading && (!user || !isAdmin)) {
+      console.log("Not admin, redirecting...");
       navigate("/", { replace: true });
     }
   }, [user, profile, loading, isAdmin, navigate]);
@@ -45,33 +49,6 @@ export default function AdminPanel() {
           User: {user?.email || "none"}<br/>
           Profile role: {profile?.role || "none"}<br/>
           isAdmin: {String(isAdmin)}
-        </div>
-      </div>
-    );
-  }
-
-  // Explicit error if profile couldn't be found (providing more context)
-  if (!loading && !profile && !(user?.email && user.email.toLowerCase() === "admin@gmail.com")) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50">
-        <span className="text-red-500 font-medium mb-4">
-          Error: No profile was found for this user ({user?.email ?? "unknown"}).<br />
-          Please contact support or try re-registering.
-        </span>
-        {/* Debug block */}
-        <div className="bg-white border rounded p-4 my-4 shadow">
-          <div className="text-lg font-bold mb-1">DEBUG:</div>
-          <div className="text-gray-800 text-sm mb-2">
-            <div><b>User Email</b>: {user?.email || "none"}</div>
-            <div><b>Profile role</b>: {profile?.role || "none"}</div>
-            <div><b>isAdmin</b>: {String(isAdmin)}</div>
-            <div><b>loading</b>: {String(loading)}</div>
-          </div>
-        </div>
-        <span className="text-gray-500 text-xs">If you are admin@gmail.com, please contact us if the problem persists.</span>
-        <div className="mt-2 text-xs text-gray-400">
-          Debug: user = {JSON.stringify(user)}<br/>
-          loading = {String(loading)}
         </div>
       </div>
     );
@@ -94,10 +71,9 @@ export default function AdminPanel() {
             <div><b>loading</b>: {String(loading)}</div>
           </div>
         </div>
-        <div className="mt-2 text-xs text-gray-400">
-          Debug: user = {JSON.stringify(user)}<br/>
-          profile = {JSON.stringify(profile)}
-        </div>
+        <Button onClick={() => navigate("/")} className="mt-4">
+          Return to Home
+        </Button>
       </div>
     );
   }
@@ -105,13 +81,6 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 p-4">
       <div className="max-w-5xl mx-auto">
-        {/* Debug info for you */}
-        <div className="mb-2 text-xs text-gray-400 flex gap-4">
-          <span>Email: {user?.email ?? "unknown"}</span>
-          <span>Role: {profile?.role ?? "none"}</span>
-          <span>Is Admin: {isAdmin ? "YES" : "NO"}</span>
-        </div>
-
         <header className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="outline" size="icon" onClick={() => navigate(-1)} className="mr-2">
