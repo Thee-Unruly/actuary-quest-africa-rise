@@ -52,7 +52,6 @@ export type Database = {
           id: string
           is_pinned: boolean | null
           likes_count: number | null
-          post_type: Database["public"]["Enums"]["post_type"] | null
           replies_count: number | null
           tags: string[] | null
           title: string
@@ -65,7 +64,6 @@ export type Database = {
           id?: string
           is_pinned?: boolean | null
           likes_count?: number | null
-          post_type?: Database["public"]["Enums"]["post_type"] | null
           replies_count?: number | null
           tags?: string[] | null
           title: string
@@ -78,22 +76,13 @@ export type Database = {
           id?: string
           is_pinned?: boolean | null
           likes_count?: number | null
-          post_type?: Database["public"]["Enums"]["post_type"] | null
           replies_count?: number | null
           tags?: string[] | null
           title?: string
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "community_posts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       community_replies: {
         Row: {
@@ -139,13 +128,6 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "community_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "community_replies_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -311,7 +293,6 @@ export type Database = {
           content: Json | null
           created_at: string | null
           description: string | null
-          difficulty: Database["public"]["Enums"]["quest_difficulty"] | null
           estimated_time: string | null
           id: string
           is_active: boolean | null
@@ -326,7 +307,6 @@ export type Database = {
           content?: Json | null
           created_at?: string | null
           description?: string | null
-          difficulty?: Database["public"]["Enums"]["quest_difficulty"] | null
           estimated_time?: string | null
           id?: string
           is_active?: boolean | null
@@ -341,7 +321,6 @@ export type Database = {
           content?: Json | null
           created_at?: string | null
           description?: string | null
-          difficulty?: Database["public"]["Enums"]["quest_difficulty"] | null
           estimated_time?: string | null
           id?: string
           is_active?: boolean | null
@@ -388,13 +367,6 @@ export type Database = {
             referencedRelation: "achievements"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_achievements_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_activities: {
@@ -422,15 +394,7 @@ export type Database = {
           id?: string
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_activities_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_likes: {
         Row: {
@@ -469,13 +433,6 @@ export type Database = {
             referencedRelation: "community_replies"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_quest_progress: {
@@ -488,7 +445,6 @@ export type Database = {
           quest_id: string | null
           score: number | null
           started_at: string | null
-          status: Database["public"]["Enums"]["quest_status"] | null
           updated_at: string | null
           user_id: string | null
         }
@@ -501,7 +457,6 @@ export type Database = {
           quest_id?: string | null
           score?: number | null
           started_at?: string | null
-          status?: Database["public"]["Enums"]["quest_status"] | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -514,7 +469,6 @@ export type Database = {
           quest_id?: string | null
           score?: number | null
           started_at?: string | null
-          status?: Database["public"]["Enums"]["quest_status"] | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -524,13 +478,6 @@ export type Database = {
             columns: ["quest_id"]
             isOneToOne: false
             referencedRelation: "quests"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_quest_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
