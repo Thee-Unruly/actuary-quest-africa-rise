@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,19 +55,28 @@ export default function QuestAdminPanel() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  const handleSubmit = async (data: {
+    title: string;
+    description: string;
+    category_id: string;
+    reward_coins: number;
+    estimated_time: string;
+    sort_order: number;
+    is_active: boolean;
+  }) => {
+    console.log('Received form data:', data);
     
     const questData = {
-      title: formData.get('title') as string,
-      description: formData.get('description') as string,
-      category_id: formData.get('category_id') as string || null,
-      reward_coins: parseInt(formData.get('reward_coins') as string) || 0,
-      estimated_time: formData.get('estimated_time') as string || null,
-      sort_order: parseInt(formData.get('sort_order') as string) || 0,
-      is_active: formData.get('is_active') === 'true',
+      title: data.title,
+      description: data.description,
+      category_id: data.category_id || null,
+      reward_coins: data.reward_coins,
+      estimated_time: data.estimated_time || null,
+      sort_order: data.sort_order,
+      is_active: data.is_active,
     };
+
+    console.log('Submitting quest data:', questData);
 
     try {
       if (editingQuest) {

@@ -1,115 +1,192 @@
 
+import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Database } from "@/integrations/supabase/types";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "@/components/ui/form";
 
 type Quest = Database['public']['Tables']['quests']['Row'];
 type QuestCategory = Database['public']['Tables']['quest_categories']['Row'];
 
+interface QuestFormData {
+  title: string;
+  description: string;
+  category_id: string;
+  reward_coins: number;
+  estimated_time: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 interface QuestFormProps {
   quest: Quest | null;
   categories: QuestCategory[];
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  onSubmit: (data: QuestFormData) => void;
   onCancel: () => void;
 }
 
 export default function QuestForm({ quest, categories, onSubmit, onCancel }: QuestFormProps) {
+  const form = useForm<QuestFormData>({
+    defaultValues: {
+      title: quest?.title || '',
+      description: quest?.description || '',
+      category_id: quest?.category_id || '',
+      reward_coins: quest?.reward_coins || 0,
+      estimated_time: quest?.estimated_time || '',
+      sort_order: quest?.sort_order || 0,
+      is_active: quest?.is_active ?? true,
+    },
+  });
+
+  const handleSubmit = (data: QuestFormData) => {
+    console.log('Form data being submitted:', data);
+    onSubmit(data);
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
             name="title"
-            defaultValue={quest?.title || ''}
-            required
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input {...field} required />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <div>
-          <Label htmlFor="reward_coins">Reward Coins</Label>
-          <Input
-            id="reward_coins"
+          <FormField
+            control={form.control}
             name="reward_coins"
-            type="number"
-            defaultValue={quest?.reward_coins || 0}
-            min="0"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Reward Coins</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    type="number" 
+                    min="0"
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-      </div>
-      
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
+        
+        <FormField
+          control={form.control}
           name="description"
-          defaultValue={quest?.description || ''}
-          rows={3}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea {...field} rows={3} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="category_id">Category</Label>
-          <Select name="category_id" defaultValue={quest?.category_id || ''}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">No Category</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="estimated_time">Estimated Time</Label>
-          <Input
-            id="estimated_time"
+        <div className="grid grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="category_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">No Category</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="estimated_time"
-            placeholder="e.g., 30 minutes"
-            defaultValue={quest?.estimated_time || ''}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estimated Time</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="e.g., 30 minutes" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <div>
-          <Label htmlFor="sort_order">Sort Order</Label>
-          <Input
-            id="sort_order"
+          <FormField
+            control={form.control}
             name="sort_order"
-            type="number"
-            defaultValue={quest?.sort_order || 0}
-            min="0"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sort Order</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    type="number" 
+                    min="0"
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-      </div>
 
-      <div>
-        <Label htmlFor="is_active">Status</Label>
-        <Select name="is_active" defaultValue={String(quest?.is_active ?? true)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="true">Active</SelectItem>
-            <SelectItem value="false">Inactive</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        <FormField
+          control={form.control}
+          name="is_active"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <Select onValueChange={(value) => field.onChange(value === 'true')} defaultValue={String(field.value)}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="true">Active</SelectItem>
+                  <SelectItem value="false">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit">
-          {quest ? 'Update Quest' : 'Create Quest'}
-        </Button>
-      </div>
-    </form>
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit">
+            {quest ? 'Update Quest' : 'Create Quest'}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
