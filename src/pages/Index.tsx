@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Coins, Users, BookOpen, Calculator, Target, MessageSquare, TrendingUp, LogOut } from "lucide-react";
+import { Trophy, Coins, Users, BookOpen, Calculator, Target, MessageSquare, TrendingUp, LogOut, Settings } from "lucide-react";
 import { QuestModule } from "@/components/QuestModule";
 import { VirtualSandbox } from "@/components/VirtualSandbox";
 import { CommunityHub } from "@/components/CommunityHub";
@@ -85,6 +85,13 @@ const DashboardContent = () => {
                   {profile?.full_name?.split(' ').map(n => n[0]).join('') || user.email?.[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
+              
+              {(profile?.role === 'admin' || profile?.role === 'instructor') && (
+                <Button variant="outline" size="sm" onClick={() => window.location.href = '/admin'}>
+                  <Settings className="w-4 h-4 mr-1" />
+                  Admin
+                </Button>
+              )}
               
               <Button variant="ghost" size="sm" onClick={signOut}>
                 <LogOut className="w-4 h-4" />
