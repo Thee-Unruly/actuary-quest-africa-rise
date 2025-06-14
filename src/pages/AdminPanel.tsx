@@ -13,19 +13,26 @@ export default function AdminPanel() {
   const { profile, loading } = useProfile();
   const navigate = useNavigate();
 
-  // Debug logs to help diagnose blank admin panel
+  // Evaluate admin status using either role or email for easier dev/admin access
+  const isAdmin =
+    (profile?.role === "admin") ||
+    (user?.email && user.email.toLowerCase() === "admin@gmail.com");
+
+  // Helpful debug information for you
   console.log("AdminPanel: user", user);
   console.log("AdminPanel: profile", profile);
   console.log("AdminPanel: loading", loading);
+  console.log("AdminPanel: isAdmin", isAdmin);
 
   useEffect(() => {
-    if (!loading && (!user || profile?.role !== "admin")) {
+    // Only redirect if we are not loading and user is neither admin by role nor by email
+    if (!loading && (!user || !isAdmin)) {
       console.log("AdminPanel: Not admin or not logged in, navigating to /");
       navigate("/", { replace: true });
     }
-  }, [user, profile, loading, navigate]);
+  }, [user, profile, loading, isAdmin, navigate]);
 
-  // Show `Checking admin access...` if loading OR during profile fetch
+  // Show loading status
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-orange-50">
@@ -34,12 +41,26 @@ export default function AdminPanel() {
     );
   }
 
-  // Explicit error if profile couldn't be found
+  // Explicit error if profile couldn't be found (providing more context)
   if (!loading && !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-orange-50">
-        <span className="text-red-500 font-medium">
-          Error: No profile was found for this user. Please contact support or try re-registering.
+      <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50">
+        <span className="text-red-500 font-medium mb-4">
+          Error: No profile was found for this user ({user?.email ?? "unknown"}).<br />
+          Please contact support or try re-registering.
+        </span>
+        <span className="text-gray-500 text-xs">If you are admin@gmail.com, please contact us if the problem persists.</span>
+      </div>
+    );
+  }
+
+  // Only admins may see the UI
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50">
+        <span className="text-red-500 font-medium mb-4">
+          Access Denied. You are not an admin.<br />
+          (Logged in as: {user?.email ?? "unknown"})
         </span>
       </div>
     );
@@ -48,6 +69,13 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 p-4">
       <div className="max-w-5xl mx-auto">
+        {/* Debug info for you */}
+        <div className="mb-2 text-xs text-gray-400 flex gap-4">
+          <span>Email: {user?.email ?? "unknown"}</span>
+          <span>Role: {profile?.role ?? "none"}</span>
+          <span>Is Admin: {isAdmin ? "YES" : "NO"}</span>
+        </div>
+
         <header className="mb-6 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-yellow-500 flex items-center justify-center">
             <Calculator className="w-6 h-6 text-white" />
@@ -58,10 +86,14 @@ export default function AdminPanel() {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-lg">Welcome, {profile.full_name || profile.username || user?.email}!</CardTitle>
+            <CardTitle className="text-lg">
+              Welcome, {profile.full_name || profile.username || user?.email}!
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700">As an admin, you can manage learning quests, news, and articles from this dashboard.</p>
+            <p className="text-gray-700">
+              As an admin, you can manage learning quests, news, and articles from this dashboard.
+            </p>
           </CardContent>
         </Card>
 
