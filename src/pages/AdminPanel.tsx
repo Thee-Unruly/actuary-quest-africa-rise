@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,8 +13,14 @@ export default function AdminPanel() {
   const { profile, loading } = useProfile();
   const navigate = useNavigate();
 
+  // Debug logs to help diagnose blank admin panel
+  console.log("AdminPanel: user", user);
+  console.log("AdminPanel: profile", profile);
+  console.log("AdminPanel: loading", loading);
+
   useEffect(() => {
     if (!loading && (!user || profile?.role !== "admin")) {
+      console.log("AdminPanel: Not admin or not logged in, navigating to /");
       navigate("/", { replace: true });
     }
   }, [user, profile, loading, navigate]);
@@ -83,3 +90,4 @@ export default function AdminPanel() {
     </div>
   );
 }
+
