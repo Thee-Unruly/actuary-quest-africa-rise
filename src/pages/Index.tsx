@@ -1,4 +1,3 @@
-
 import { AuthProvider } from "@/components/AuthProvider";
 import { AuthPage } from "@/components/AuthPage";
 import { useAuth } from "@/components/AuthProvider";
@@ -16,9 +15,7 @@ const IndexContent = () => {
 };
 
 const Index = () => (
-  <AuthProvider>
-    <IndexContent />
-  </AuthProvider>
+  <IndexContent />
 );
 
 export default Index;
