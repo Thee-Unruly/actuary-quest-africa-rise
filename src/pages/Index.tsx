@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,9 +86,14 @@ const DashboardContent = () => {
               </Avatar>
               
               {(profile?.role === 'admin' || profile?.role === 'instructor') && (
-                <Button variant="outline" size="sm" onClick={() => window.location.href = '/admin'}>
-                  <Settings className="w-4 h-4 mr-1" />
-                  Admin
+                <Button 
+                  variant="default" 
+                  size="default" 
+                  onClick={() => window.location.href = '/admin'}
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Settings className="w-5 h-5 mr-2" />
+                  Admin Panel
                 </Button>
               )}
               
