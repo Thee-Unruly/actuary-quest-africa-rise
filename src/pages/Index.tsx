@@ -16,7 +16,7 @@ import { useProfile } from "@/hooks/useProfile";
 
 const DashboardContent = () => {
   const { user, signOut } = useAuth();
-  const { profile, loading } = useProfile();
+  const { profile, loading, updateProfile } = useProfile();
   const [activeTab, setActiveTab] = useState("dashboard");
 
   if (!user) {
@@ -41,6 +41,19 @@ const DashboardContent = () => {
     questsCompleted: profile?.total_quests_completed || 0,
     sandboxScore: profile?.sandbox_score || 0,
     communityRank: profile?.community_rank || "Beginner Actuarian"
+  };
+
+  const setUserStats = async (newStats: typeof userStats) => {
+    try {
+      await updateProfile({
+        risk_coins: newStats.riskCoins,
+        total_quests_completed: newStats.questsCompleted,
+        sandbox_score: newStats.sandboxScore,
+        community_rank: newStats.communityRank
+      });
+    } catch (error) {
+      console.error('Error updating user stats:', error);
+    }
   };
 
   return (
@@ -184,12 +197,12 @@ const DashboardContent = () => {
 
           {/* Learning Quests Tab */}
           <TabsContent value="quests">
-            <QuestModule userStats={userStats} />
+            <QuestModule userStats={userStats} setUserStats={setUserStats} />
           </TabsContent>
 
           {/* News & Trends Tab */}
           <TabsContent value="sandbox">
-            <VirtualSandbox userStats={userStats} />
+            <VirtualSandbox userStats={userStats} setUserStats={setUserStats} />
           </TabsContent>
 
           {/* Community Hub Tab */}

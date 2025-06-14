@@ -2,19 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 
-interface Profile {
-  id: string;
-  username: string | null;
-  full_name: string | null;
-  avatar_url: string | null;
-  role: string;
-  risk_coins: number;
-  current_streak: number;
-  community_rank: string;
-  total_quests_completed: number;
-  sandbox_score: number;
-}
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export const useProfile = () => {
   const { user } = useAuth();
@@ -49,7 +39,7 @@ export const useProfile = () => {
     }
   };
 
-  const updateProfile = async (updates: Partial<Profile>) => {
+  const updateProfile = async (updates: Database['public']['Tables']['profiles']['Update']) => {
     if (!user) return;
 
     try {
