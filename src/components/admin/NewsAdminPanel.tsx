@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Plus, Trash2, Edit } from "lucide-react";
+import { toast } from "sonner";
 
 interface ArticleForm {
   id?: string;
@@ -39,34 +40,41 @@ export default function NewsAdminPanel() {
   // Create or update article
   const mutation = useMutation({
     mutationFn: async (form: ArticleForm) => {
+      console.log('Submitting article data:', form);
+      
+      const articleData = {
+        title: form.title,
+        summary: form.summary || null,
+        content: form.content || null,
+        source: form.source || null,
+      };
+
       if (form.id) {
         // Update
-        let { data, error } = await supabase
+        const { data, error } = await supabase
           .from("news_articles")
-          .update({
-            title: form.title,
-            summary: form.summary,
-            content: form.content,
-            source: form.source,
-          })
+          .update(articleData)
           .eq("id", form.id)
+          .select()
           .single();
-        if (error) throw error;
+        
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
         return data;
       } else {
         // Create
-        let { data, error } = await supabase
+        const { data, error } = await supabase
           .from("news_articles")
-          .insert([
-            {
-              title: form.title,
-              summary: form.summary,
-              content: form.content,
-              source: form.source,
-            }
-          ])
+          .insert([articleData])
+          .select()
           .single();
-        if (error) throw error;
+        
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
         return data;
       }
     },
@@ -74,6 +82,11 @@ export default function NewsAdminPanel() {
       queryClient.invalidateQueries({ queryKey: ["admin-news-articles"] });
       setShowForm(false);
       setEditingArticle(null);
+      toast.success(editingArticle ? 'Article updated successfully!' : 'Article created successfully!');
+    },
+    onError: (error: any) => {
+      console.error('Mutation error:', error);
+      toast.error(`Failed to save article: ${error.message}`);
     }
   });
 
@@ -85,8 +98,29 @@ export default function NewsAdminPanel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-news-articles"] });
+      toast.success('Article deleted successfully!');
+    },
+    onError: (error: any) => {
+      console.error('Delete error:', error);
+      toast.error(`Failed to delete article: ${error.message}`);
     }
   });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    
+    const article: ArticleForm = {
+      id: editingArticle?.id,
+      title: fd.get("title") as string,
+      summary: fd.get("summary") as string,
+      content: fd.get("content") as string,
+      source: fd.get("source") as string,
+    };
+
+    console.log('Form submission data:', article);
+    mutation.mutate(article);
+  };
 
   return (
     <div className="space-y-6">
@@ -114,14 +148,19 @@ export default function NewsAdminPanel() {
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-base mb-1">{a.title}</CardTitle>
-                      <Badge className="bg-orange-100 text-orange-600">{a.source}</Badge>
+                      {a.source && <Badge className="bg-orange-100 text-orange-600">{a.source}</Badge>}
                       <div className="text-xs text-gray-500 mt-1">{a.published_at?.slice(0, 10)}</div>
                     </div>
                     <div className="flex gap-2">
                       <Button size="icon" variant="ghost" onClick={() => { setEditingArticle(a); setShowForm(true); }}>
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button size="icon" variant="destructive" onClick={() => deleteMutation.mutate(a.id)}>
+                      <Button 
+                        size="icon" 
+                        variant="destructive" 
+                        onClick={() => deleteMutation.mutate(a.id)}
+                        disabled={deleteMutation.isPending}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -145,29 +184,34 @@ export default function NewsAdminPanel() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form
-              className="space-y-4"
-              onSubmit={e => {
-                e.preventDefault();
-                const fd = new FormData(e.currentTarget);
-                const article: ArticleForm = {
-                  id: editingArticle?.id,
-                  title: fd.get("title") as string,
-                  summary: fd.get("summary") as string,
-                  content: fd.get("content") as string,
-                  source: fd.get("source") as string,
-                };
-                mutation.mutate(article);
-              }}
-            >
-              <Input required name="title" defaultValue={editingArticle?.title || ""} placeholder="Title" />
-              <Input name="source" defaultValue={editingArticle?.source || ""} placeholder="Source" />
-              <Textarea name="summary" rows={2} defaultValue={editingArticle?.summary || ""} placeholder="Summary" />
-              <Textarea name="content" rows={4} defaultValue={editingArticle?.content || ""} placeholder="Content (optional)" />
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <Input 
+                required 
+                name="title" 
+                defaultValue={editingArticle?.title || ""} 
+                placeholder="Title" 
+              />
+              <Input 
+                name="source" 
+                defaultValue={editingArticle?.source || ""} 
+                placeholder="Source" 
+              />
+              <Textarea 
+                name="summary" 
+                rows={2} 
+                defaultValue={editingArticle?.summary || ""} 
+                placeholder="Summary" 
+              />
+              <Textarea 
+                name="content" 
+                rows={4} 
+                defaultValue={editingArticle?.content || ""} 
+                placeholder="Content (optional)" 
+              />
               <div className="flex gap-2">
                 <Button type="submit" disabled={mutation.isPending}>
                   {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
-                  Save
+                  {mutation.isPending ? 'Saving...' : 'Save'}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditingArticle(null); }}>
                   Cancel
