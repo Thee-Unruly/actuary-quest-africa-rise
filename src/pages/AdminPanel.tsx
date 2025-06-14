@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,15 +23,22 @@ export default function AdminPanel() {
   console.log("AdminPanel: loading", loading);
   console.log("AdminPanel: isAdmin", isAdmin);
 
-  // <--- NEW: show debug info before redirect --->
   useEffect(() => {
+    let navigationTimeoutId: ReturnType<typeof setTimeout> | undefined;
+
     // Only redirect if we are not loading and user is neither admin by role nor by email
     if (!loading && (!user || !isAdmin)) {
-      // Delay the navigation by a little to let the debug ui render
-      setTimeout(() => {
+      navigationTimeoutId = setTimeout(() => {
         navigate("/", { replace: true });
       }, 2200); // 2.2 seconds
     }
+
+    // Cleanup function to clear the timeout if dependencies change or component unmounts
+    return () => {
+      if (navigationTimeoutId) {
+        clearTimeout(navigationTimeoutId);
+      }
+    };
   }, [user, profile, loading, isAdmin, navigate]);
 
   if (loading) {
@@ -50,7 +56,7 @@ export default function AdminPanel() {
   }
 
   // Explicit error if profile couldn't be found (providing more context)
-  if (!loading && !profile) {
+  if (!loading && !profile && !(user?.email && user.email.toLowerCase() === "admin@gmail.com")) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50">
         <span className="text-red-500 font-medium mb-4">
@@ -125,7 +131,7 @@ export default function AdminPanel() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-lg">
-              Welcome, {profile.full_name || profile.username || user?.email}!
+              Welcome, {profile?.full_name || profile?.username || user?.email}!
             </CardTitle>
           </CardHeader>
           <CardContent>
