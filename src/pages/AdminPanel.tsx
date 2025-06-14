@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/components/AuthProvider";
 import { useProfile } from "@/hooks/useProfile";
 import { Calculator, BookOpen, Newspaper } from "lucide-react";
+import NewsAdminPanel from "@/components/admin/NewsAdminPanel";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -75,18 +75,7 @@ export default function AdminPanel() {
           </TabsContent>
           <TabsContent value="news">
             <div className="mt-6">
-              {/* Placeholder for news & articles management */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Manage News & Articles</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    Here you will be able to <span className="font-medium">add, edit, and remove news & articles</span>.
-                    (Feature coming soon!)
-                  </p>
-                </CardContent>
-              </Card>
+              <NewsAdminPanel />
             </div>
           </TabsContent>
         </Tabs>
