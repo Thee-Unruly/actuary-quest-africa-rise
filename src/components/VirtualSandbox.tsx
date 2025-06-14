@@ -1,9 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, TrendingUp, ExternalLink, Calendar, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VirtualSandboxProps {
   userStats: {
@@ -15,146 +16,104 @@ interface VirtualSandboxProps {
   setUserStats: (stats: any) => void;
 }
 
-export const VirtualSandbox = ({ userStats, setUserStats }: VirtualSandboxProps) => {
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+interface NewsArticle {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  source: string;
+  author: string;
+  external_url: string;
+  published_at: string;
+  category_id: string;
+}
 
-  const topics = {
-    "IFRS 17": {
-      description: "The new international accounting standard for insurance contracts",
-      articles: [
-        {
-          title: "IFRS 17 Implementation Timeline Extended to 2025",
-          summary: "Key updates on the extended implementation timeline and what insurers need to know",
-          link: "https://example.com/ifrs17-timeline",
-          date: "2024-06-10",
-          source: "Insurance Journal"
-        },
-        {
-          title: "Practical Guide to IFRS 17 Transition Adjustments",
-          summary: "Step-by-step approach to handling transition adjustments under the new standard",
-          link: "https://example.com/ifrs17-transition",
-          date: "2024-06-08",
-          source: "KPMG Insights"
-        },
-        {
-          title: "Technology Solutions for IFRS 17 Compliance",
-          summary: "How insurtech is helping companies prepare for IFRS 17 requirements",
-          link: "https://example.com/ifrs17-tech",
-          date: "2024-06-05",
-          source: "Actuarial Post"
-        }
-      ]
-    },
-    "Climate Risk": {
-      description: "Emerging trends in climate risk modeling and actuarial applications",
-      articles: [
-        {
-          title: "AI-Powered Climate Risk Models Transform Insurance Pricing",
-          summary: "Machine learning algorithms are revolutionizing how insurers assess climate-related risks",
-          link: "https://example.com/climate-ai",
-          date: "2024-06-12",
-          source: "Risk Management Magazine"
-        },
-        {
-          title: "TCFD Reporting Requirements for Insurance Companies",
-          summary: "New climate disclosure requirements and their impact on actuarial valuations",
-          link: "https://example.com/tcfd-insurance",
-          date: "2024-06-09",
-          source: "Environmental Finance"
-        },
-        {
-          title: "Catastrophe Modeling in the Era of Extreme Weather",
-          summary: "How actuaries are adapting cat models for increasingly unpredictable weather patterns",
-          link: "https://example.com/cat-modeling",
-          date: "2024-06-07",
-          source: "Casualty Actuarial Society"
-        }
-      ]
-    },
-    "Digital Transformation": {
-      description: "Technology adoption and digital innovation in actuarial science",
-      articles: [
-        {
-          title: "Blockchain Applications in Insurance Claim Processing",
-          summary: "How distributed ledger technology is streamlining claims and reducing fraud",
-          link: "https://example.com/blockchain-claims",
-          date: "2024-06-11",
-          source: "InsurTech Weekly"
-        },
-        {
-          title: "Real-Time Data Analytics in Underwriting",
-          summary: "The shift from traditional to real-time risk assessment using IoT and telematics",
-          link: "https://example.com/realtime-underwriting",
-          date: "2024-06-06",
-          source: "Digital Insurance"
-        },
-        {
-          title: "API-First Approach to Actuarial Systems",
-          summary: "Building flexible, scalable actuarial platforms for the digital age",
-          link: "https://example.com/api-actuarial",
-          date: "2024-06-04",
-          source: "Actuarial Review"
-        }
-      ]
-    },
-    "Regulatory Updates": {
-      description: "Latest regulatory changes affecting actuarial practice globally",
-      articles: [
-        {
-          title: "Solvency II Review: Key Changes for 2024",
-          summary: "European regulators announce significant updates to capital requirements",
-          link: "https://example.com/solvency-ii-2024",
-          date: "2024-06-13",
-          source: "European Insurance Journal"
-        },
-        {
-          title: "US State Insurance Reforms Impact Pricing Models",
-          summary: "How new state regulations are changing actuarial assumptions and methodologies",
-          link: "https://example.com/us-insurance-reforms",
-          date: "2024-06-10",
-          source: "NAIC Quarterly"
-        },
-        {
-          title: "Global Pension Reform Trends and Actuarial Implications",
-          summary: "Cross-border analysis of pension system changes and their actuarial impact",
-          link: "https://example.com/pension-reforms",
-          date: "2024-06-08",
-          source: "Pension & Investments"
-        }
-      ]
-    },
-    "Machine Learning": {
-      description: "AI and ML applications transforming actuarial modeling",
-      articles: [
-        {
-          title: "Neural Networks in Mortality Forecasting",
-          summary: "Deep learning models outperform traditional life tables in longevity prediction",
-          link: "https://example.com/neural-mortality",
-          date: "2024-06-12",
-          source: "Journal of Actuarial Practice"
-        },
-        {
-          title: "Explainable AI in Insurance Pricing",
-          summary: "Balancing model accuracy with regulatory transparency requirements",
-          link: "https://example.com/explainable-ai",
-          date: "2024-06-09",
-          source: "AI in Insurance"
-        },
-        {
-          title: "Automated Claim Fraud Detection Using ML",
-          summary: "How machine learning is revolutionizing fraud prevention in insurance",
-          link: "https://example.com/ml-fraud-detection",
-          date: "2024-06-07",
-          source: "Fraud Magazine"
-        }
-      ]
+interface NewsCategory {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export const VirtualSandbox = ({ userStats, setUserStats }: VirtualSandboxProps) => {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categories, setCategories] = useState<NewsCategory[]>([]);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [categoryArticles, setCategoryArticles] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchArticles();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory && articles.length > 0) {
+      const filtered = articles.filter(article => article.category_id === selectedCategory);
+      setCategoryArticles(filtered);
+    }
+  }, [selectedCategory, articles]);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('news_categories')
+        .select('*')
+        .order('sort_order');
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
   };
 
-  const topicKeys = Object.keys(topics);
+  const fetchArticles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('news_articles')
+        .select('*')
+        .order('published_at', { ascending: false });
 
-  if (selectedTopic && topics[selectedTopic as keyof typeof topics]) {
-    const topic = topics[selectedTopic as keyof typeof topics];
+      if (error) throw error;
+      setArticles(data || []);
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getArticlesByCategory = (categoryId: string) => {
+    return articles.filter(article => article.category_id === categoryId);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-blue-500" />
+              Actuarial News & Trends
+            </CardTitle>
+            <CardDescription>Loading articles...</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
+  if (selectedCategory) {
+    const category = categories.find(cat => cat.id === selectedCategory);
+    
     return (
       <div className="space-y-6">
         <Card>
@@ -163,46 +122,73 @@ export const VirtualSandbox = ({ userStats, setUserStats }: VirtualSandboxProps)
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-blue-500" />
-                  {selectedTopic}
+                  {category?.name}
                 </CardTitle>
-                <CardDescription>{topic.description}</CardDescription>
+                <CardDescription>{category?.description}</CardDescription>
               </div>
-              <Button variant="outline" onClick={() => setSelectedTopic(null)}>
-                Back to Topics
+              <Button variant="outline" onClick={() => setSelectedCategory(null)}>
+                Back to Categories
               </Button>
             </div>
           </CardHeader>
         </Card>
 
         <div className="grid grid-cols-1 gap-6">
-          {topic.articles.map((article, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg mb-2">{article.title}</CardTitle>
-                    <CardDescription className="mb-3">{article.summary}</CardDescription>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {article.date}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        {article.source}
+          {categoryArticles.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-gray-600">No articles found in this category yet.</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Articles created by admins will appear here.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            categoryArticles.map((article) => (
+              <Card key={article.id} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg mb-2">{article.title}</CardTitle>
+                      {article.summary && (
+                        <CardDescription className="mb-3">{article.summary}</CardDescription>
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {formatDate(article.published_at)}
+                        </div>
+                        {article.source && (
+                          <div className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            {article.source}
+                          </div>
+                        )}
+                        {article.author && (
+                          <Badge variant="outline">{article.author}</Badge>
+                        )}
                       </div>
                     </div>
+                    {article.external_url && (
+                      <Button size="sm" className="ml-4" asChild>
+                        <a href={article.external_url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-4 h-4 mr-1" />
+                          Read More
+                        </a>
+                      </Button>
+                    )}
                   </div>
-                  <Button size="sm" className="ml-4" asChild>
-                    <a href={article.link} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-4 h-4 mr-1" />
-                      Read More
-                    </a>
-                  </Button>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
+                  {article.content && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="text-sm text-gray-700 whitespace-pre-line">
+                        {article.content}
+                      </div>
+                    </div>
+                  )}
+                </CardHeader>
+              </Card>
+            ))
+          )}
         </div>
       </div>
     );
@@ -222,34 +208,53 @@ export const VirtualSandbox = ({ userStats, setUserStats }: VirtualSandboxProps)
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {topicKeys.map((topicKey) => {
-          const topic = topics[topicKey as keyof typeof topics];
-          return (
-            <Card key={topicKey} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedTopic(topicKey)}>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center justify-between">
-                  {topicKey}
-                  <Badge variant="secondary">{topic.articles.length} articles</Badge>
-                </CardTitle>
-                <CardDescription className="mb-4">{topic.description}</CardDescription>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-gray-700">Latest:</div>
-                  <div className="text-sm text-gray-600 line-clamp-2">
-                    {topic.articles[0].title}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="outline">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Explore Topic
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {categories.length === 0 ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-gray-600">No news categories available yet.</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Admins can create categories and articles through the admin panel.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((category) => {
+            const categoryArticlesCount = getArticlesByCategory(category.id);
+            const latestArticle = categoryArticlesCount[0];
+            
+            return (
+              <Card 
+                key={category.id} 
+                className="hover:shadow-lg transition-shadow cursor-pointer" 
+                onClick={() => setSelectedCategory(category.id)}
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    {category.name}
+                    <Badge variant="secondary">{categoryArticlesCount.length} articles</Badge>
+                  </CardTitle>
+                  <CardDescription className="mb-4">{category.description}</CardDescription>
+                  {latestArticle && (
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-gray-700">Latest:</div>
+                      <div className="text-sm text-gray-600 line-clamp-2">
+                        {latestArticle.title}
+                      </div>
+                    </div>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full" variant="outline">
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Explore Category
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
         <CardHeader>
