@@ -2,9 +2,10 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/AuthProvider";
 import { useProfile } from "@/hooks/useProfile";
-import { Calculator, BookOpen, Newspaper } from "lucide-react";
+import { Calculator, BookOpen, Newspaper, ArrowLeft } from "lucide-react";
 import NewsAdminPanel from "@/components/admin/NewsAdminPanel";
 
 export default function AdminPanel() {
@@ -24,21 +25,11 @@ export default function AdminPanel() {
   console.log("AdminPanel: isAdmin", isAdmin);
 
   useEffect(() => {
-    let navigationTimeoutId: ReturnType<typeof setTimeout> | undefined;
-
-    // Only redirect if we are not loading and user is neither admin by role nor by email
+    // If not loading, and not an admin, navigate away immediately.
     if (!loading && (!user || !isAdmin)) {
-      navigationTimeoutId = setTimeout(() => {
-        navigate("/", { replace: true });
-      }, 2200); // 2.2 seconds
+      navigate("/", { replace: true });
     }
-
-    // Cleanup function to clear the timeout if dependencies change or component unmounts
-    return () => {
-      if (navigationTimeoutId) {
-        clearTimeout(navigationTimeoutId);
-      }
-    };
+    // No cleanup needed for timeout as it's removed.
   }, [user, profile, loading, isAdmin, navigate]);
 
   if (loading) {
@@ -120,12 +111,17 @@ export default function AdminPanel() {
           <span>Is Admin: {isAdmin ? "YES" : "NO"}</span>
         </div>
 
-        <header className="mb-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-yellow-500 flex items-center justify-center">
-            <Calculator className="w-6 h-6 text-white" />
+        <header className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => navigate(-1)} className="mr-2">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-yellow-500 flex items-center justify-center">
+              <Calculator className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-          <span className="ml-2 px-2 py-1 bg-orange-200 text-orange-800 text-xs rounded">ADMIN</span>
+          <span className="px-2 py-1 bg-orange-200 text-orange-800 text-xs rounded">ADMIN</span>
         </header>
 
         <Card className="mb-6">
