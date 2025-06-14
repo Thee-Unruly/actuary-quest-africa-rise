@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,7 +69,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    console.log("Attempting sign out...");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Supabase signOut error:", error);
+        // Optionally show a toast if you have a toast function here
+        if (typeof window !== "undefined" && window?.sonner?.toast) {
+          window.sonner.toast.error("Logout failed: " + error.message);
+        }
+      } else {
+        console.log("Successfully signed out from Supabase.");
+        if (typeof window !== "undefined" && window?.sonner?.toast) {
+          window.sonner.toast.success("Logged out successfully!");
+        }
+      }
+    } catch (err: any) {
+      console.error("Unexpected error during signOut:", err);
+      if (typeof window !== "undefined" && window?.sonner?.toast) {
+        window.sonner.toast.error("Unexpected logout error.");
+      }
+    }
+    // Ensure local state is reset regardless of Supabase response
+    setUser(null);
+    setSession(null);
+    setLoading(false);
   };
 
   const value = {
