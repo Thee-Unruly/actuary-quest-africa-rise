@@ -9,9 +9,11 @@ import { Calculator, BookOpen, Newspaper, ArrowLeft } from "lucide-react";
 import NewsAdminPanel from "@/components/admin/NewsAdminPanel";
 
 export default function AdminPanel() {
-  const { user } = useAuth();
-  const { profile, loading } = useProfile();
+  const { user, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
   const navigate = useNavigate();
+
+  const loading = authLoading || profileLoading;
 
   // Evaluate admin status using either role or email for easier dev/admin access
   const isAdmin =
@@ -37,7 +39,8 @@ export default function AdminPanel() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50">
         <span className="text-orange-500 font-medium">Checking admin access...</span>
         <div className="mt-2 text-xs text-gray-400">
-          Loading: {String(loading)}<br/>
+          Auth Loading: {String(authLoading)}<br/>
+          Profile Loading: {String(profileLoading)}<br/>
           User: {user?.email || "none"}<br/>
           Profile role: {profile?.role || "none"}<br/>
           isAdmin: {String(isAdmin)}
