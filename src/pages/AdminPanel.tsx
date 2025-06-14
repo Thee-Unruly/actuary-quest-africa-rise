@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useProfile } from "@/hooks/useProfile";
 import { Calculator, BookOpen, Newspaper, ArrowLeft } from "lucide-react";
 import NewsAdminPanel from "@/components/admin/NewsAdminPanel";
+import QuestAdminPanel from "@/components/admin/QuestAdminPanel";
 
 export default function AdminPanel() {
   const { user, loading: authLoading } = useAuth();
@@ -31,7 +33,6 @@ export default function AdminPanel() {
     if (!loading && (!user || !isAdmin)) {
       navigate("/", { replace: true });
     }
-    // No cleanup needed for timeout as it's removed.
   }, [user, profile, loading, isAdmin, navigate]);
 
   if (loading) {
@@ -97,9 +98,6 @@ export default function AdminPanel() {
           Debug: user = {JSON.stringify(user)}<br/>
           profile = {JSON.stringify(profile)}
         </div>
-        <div className="mt-8 text-orange-500 text-base font-semibold">
-          You will be redirected soon.
-        </div>
       </div>
     );
   }
@@ -153,17 +151,7 @@ export default function AdminPanel() {
           </TabsList>
           <TabsContent value="quests">
             <div className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Manage Learning Quests</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    Here you will be able to <span className="font-medium">add, edit, and remove learning quests</span>.
-                    (Feature coming soon!)
-                  </p>
-                </CardContent>
-              </Card>
+              <QuestAdminPanel />
             </div>
           </TabsContent>
           <TabsContent value="news">
