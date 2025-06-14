@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,7 +58,10 @@ export default function QuestAdminPanel() {
     }
   };
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
     const questData = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
@@ -157,7 +159,7 @@ export default function QuestAdminPanel() {
                     {editingQuest ? 'Edit Quest' : 'Create New Quest'}
                   </DialogTitle>
                 </DialogHeader>
-                <form action={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="title">Title</Label>
