@@ -1,7 +1,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Calculator, Coins, LogOut, Settings } from "lucide-react";
+import { Calculator, Coins, LogOut } from "lucide-react";
 
 interface HeaderProps {
   profile: any;
@@ -37,18 +37,6 @@ export const Header = ({ profile, user, riskCoins, onSignOut }: HeaderProps) => 
               {profile?.full_name?.split(' ').map(n => n[0]).join('') || user.email?.[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          
-          {(profile?.role === 'admin' || profile?.role === 'instructor') && (
-            <Button 
-              variant="default" 
-              size="default" 
-              onClick={() => window.location.href = '/admin'}
-              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Settings className="w-5 h-5 mr-2" />
-              Admin Panel
-            </Button>
-          )}
           
           <Button variant="ghost" size="sm" onClick={onSignOut}>
             <LogOut className="w-4 h-4" />
