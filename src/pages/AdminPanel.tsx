@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,11 +24,14 @@ export default function AdminPanel() {
   console.log("AdminPanel: loading", loading);
   console.log("AdminPanel: isAdmin", isAdmin);
 
+  // <--- NEW: show debug info before redirect --->
   useEffect(() => {
     // Only redirect if we are not loading and user is neither admin by role nor by email
     if (!loading && (!user || !isAdmin)) {
-      console.log("AdminPanel: Not admin or not logged in, navigating to /");
-      navigate("/", { replace: true });
+      // Delay the navigation by a little to let the debug ui render
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 2200); // 2.2 seconds
     }
   }, [user, profile, loading, isAdmin, navigate]);
 
@@ -38,7 +42,8 @@ export default function AdminPanel() {
         <div className="mt-2 text-xs text-gray-400">
           Loading: {String(loading)}<br/>
           User: {user?.email || "none"}<br/>
-          Profile role: {profile?.role || "none"}
+          Profile role: {profile?.role || "none"}<br/>
+          isAdmin: {String(isAdmin)}
         </div>
       </div>
     );
@@ -52,6 +57,16 @@ export default function AdminPanel() {
           Error: No profile was found for this user ({user?.email ?? "unknown"}).<br />
           Please contact support or try re-registering.
         </span>
+        {/* Debug block */}
+        <div className="bg-white border rounded p-4 my-4 shadow">
+          <div className="text-lg font-bold mb-1">DEBUG:</div>
+          <div className="text-gray-800 text-sm mb-2">
+            <div><b>User Email</b>: {user?.email || "none"}</div>
+            <div><b>Profile role</b>: {profile?.role || "none"}</div>
+            <div><b>isAdmin</b>: {String(isAdmin)}</div>
+            <div><b>loading</b>: {String(loading)}</div>
+          </div>
+        </div>
         <span className="text-gray-500 text-xs">If you are admin@gmail.com, please contact us if the problem persists.</span>
         <div className="mt-2 text-xs text-gray-400">
           Debug: user = {JSON.stringify(user)}<br/>
@@ -69,9 +84,21 @@ export default function AdminPanel() {
           Access Denied. You are not an admin.<br />
           (Logged in as: {user?.email ?? "unknown"})
         </span>
+        <div className="bg-white border rounded p-4 my-4 shadow">
+          <div className="text-lg font-bold mb-1">DEBUG:</div>
+          <div className="text-gray-800 text-sm mb-2">
+            <div><b>User Email</b>: {user?.email || "none"}</div>
+            <div><b>Profile role</b>: {profile?.role || "none"}</div>
+            <div><b>isAdmin</b>: {String(isAdmin)}</div>
+            <div><b>loading</b>: {String(loading)}</div>
+          </div>
+        </div>
         <div className="mt-2 text-xs text-gray-400">
           Debug: user = {JSON.stringify(user)}<br/>
           profile = {JSON.stringify(profile)}
+        </div>
+        <div className="mt-8 text-orange-500 text-base font-semibold">
+          You will be redirected soon.
         </div>
       </div>
     );
