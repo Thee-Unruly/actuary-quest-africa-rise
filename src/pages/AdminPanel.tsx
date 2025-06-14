@@ -25,10 +25,22 @@ export default function AdminPanel() {
     }
   }, [user, profile, loading, navigate]);
 
-  if (loading || !profile) {
+  // Show `Checking admin access...` if loading OR during profile fetch
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-orange-50">
         <span className="text-orange-500 font-medium">Checking admin access...</span>
+      </div>
+    );
+  }
+
+  // Explicit error if profile couldn't be found
+  if (!loading && !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-orange-50">
+        <span className="text-red-500 font-medium">
+          Error: No profile was found for this user. Please contact support or try re-registering.
+        </span>
       </div>
     );
   }
@@ -90,4 +102,3 @@ export default function AdminPanel() {
     </div>
   );
 }
-
