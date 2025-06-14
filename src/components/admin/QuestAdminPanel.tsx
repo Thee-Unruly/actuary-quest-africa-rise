@@ -12,6 +12,16 @@ import QuestList from "./QuestList";
 type Quest = Database['public']['Tables']['quests']['Row'];
 type QuestCategory = Database['public']['Tables']['quest_categories']['Row'];
 
+interface QuestFormData {
+  title: string;
+  description: string;
+  category_id: string;
+  reward_coins: number;
+  estimated_time: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 export default function QuestAdminPanel() {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [categories, setCategories] = useState<QuestCategory[]>([]);
@@ -55,53 +65,52 @@ export default function QuestAdminPanel() {
     }
   };
 
-  const handleSubmit = async (data: {
-    title: string;
-    description: string;
-    category_id: string;
-    reward_coins: number;
-    estimated_time: string;
-    sort_order: number;
-    is_active: boolean;
-  }) => {
+  const handleSubmit = async (data: QuestFormData) => {
     console.log('Received form data:', data);
     
-    const questData = {
-      title: data.title,
-      description: data.description,
-      category_id: data.category_id || null,
-      reward_coins: data.reward_coins,
-      estimated_time: data.estimated_time || null,
-      sort_order: data.sort_order,
-      is_active: data.is_active,
-    };
-
-    console.log('Submitting quest data:', questData);
-
     try {
+      // Prepare the data for Supabase
+      const questData = {
+        title: data.title,
+        description: data.description,
+        category_id: data.category_id || null, // Convert empty string to null
+        reward_coins: data.reward_coins,
+        estimated_time: data.estimated_time || null, // Convert empty string to null
+        sort_order: data.sort_order,
+        is_active: data.is_active,
+      };
+
+      console.log('Submitting quest data:', questData);
+
       if (editingQuest) {
         const { error } = await supabase
           .from('quests')
           .update(questData)
           .eq('id', editingQuest.id);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
         toast.success('Quest updated successfully!');
       } else {
         const { error } = await supabase
           .from('quests')
           .insert([questData]);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
         toast.success('Quest created successfully!');
       }
       
       setIsDialogOpen(false);
       setEditingQuest(null);
-      fetchQuests();
+      await fetchQuests(); // Refresh the list
     } catch (error) {
       console.error('Error saving quest:', error);
-      toast.error('Failed to save quest');
+      toast.error(`Failed to save quest: ${error.message}`);
     }
   };
 
