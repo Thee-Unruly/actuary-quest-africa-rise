@@ -1,23 +1,47 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Coins, Users, BookOpen, Calculator, Target, MessageSquare, TrendingUp } from "lucide-react";
+import { Trophy, Coins, Users, BookOpen, Calculator, Target, MessageSquare, TrendingUp, LogOut } from "lucide-react";
 import { QuestModule } from "@/components/QuestModule";
 import { VirtualSandbox } from "@/components/VirtualSandbox";
 import { CommunityHub } from "@/components/CommunityHub";
+import { AuthProvider, useAuth } from "@/components/AuthProvider";
+import { AuthPage } from "@/components/AuthPage";
+import { useProfile } from "@/hooks/useProfile";
 
-const Index = () => {
+const DashboardContent = () => {
+  const { user, signOut } = useAuth();
+  const { profile, loading } = useProfile();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [userStats, setUserStats] = useState({
-    riskCoins: 150,
-    questsCompleted: 3,
-    sandboxScore: 85,
-    communityRank: "Risk Guru"
-  });
+
+  if (!user) {
+    return <AuthPage />;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Calculator className="w-6 h-6 text-white animate-pulse" />
+          </div>
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const userStats = {
+    riskCoins: profile?.risk_coins || 0,
+    questsCompleted: profile?.total_quests_completed || 0,
+    sandboxScore: profile?.sandbox_score || 0,
+    communityRank: profile?.community_rank || "Beginner Actuarian"
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 p-4">
@@ -31,7 +55,7 @@ const Index = () => {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Actuarial Hub</h1>
-                <p className="text-gray-600">Gamifying Actuarial Learning</p>
+                <p className="text-gray-600">Welcome back, {profile?.full_name || user.email}</p>
               </div>
             </div>
             
@@ -43,9 +67,15 @@ const Index = () => {
               </div>
               
               <Avatar className="w-10 h-10">
-                <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback className="bg-orange-500 text-white">SU</AvatarFallback>
+                <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} />
+                <AvatarFallback className="bg-orange-500 text-white">
+                  {profile?.full_name?.split(' ').map(n => n[0]).join('') || user.email?.[0]?.toUpperCase()}
+                </AvatarFallback>
               </Avatar>
+              
+              <Button variant="ghost" size="sm" onClick={signOut}>
+                <LogOut className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </header>
@@ -87,9 +117,9 @@ const Index = () => {
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Quests Completed</span>
-                      <span>{userStats.questsCompleted}/10</span>
+                      <span>{userStats.questsCompleted}/20</span>
                     </div>
-                    <Progress value={userStats.questsCompleted * 10} className="h-2" />
+                    <Progress value={(userStats.questsCompleted / 20) * 100} className="h-2" />
                   </div>
                   
                   <div>
@@ -104,7 +134,7 @@ const Index = () => {
                     <Badge variant="secondary" className="bg-orange-100 text-orange-800">
                       {userStats.communityRank}
                     </Badge>
-                    <Badge variant="outline">Beginner Actuarian</Badge>
+                    <Badge variant="outline">{profile?.role}</Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -121,11 +151,11 @@ const Index = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Current Streak</span>
-                    <span className="font-bold">5 days</span>
+                    <span className="font-bold">{profile?.current_streak || 0} days</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Next Quest</span>
-                    <span className="font-bold text-orange-600">Available</span>
+                    <span className="text-sm text-gray-600">Total Completed</span>
+                    <span className="font-bold text-orange-600">{userStats.questsCompleted}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -143,18 +173,8 @@ const Index = () => {
                       <BookOpen className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <p className="font-medium">Completed "Auto Insurance Pricing" Quest</p>
-                      <p className="text-sm text-gray-600">Earned 50 Risk Coins • 2 hours ago</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <Calculator className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-medium">New Sandbox Score: 85%</p>
-                      <p className="text-sm text-gray-600">Improved by 15% • 1 day ago</p>
+                      <p className="font-medium">Welcome to Actuarial Hub!</p>
+                      <p className="text-sm text-gray-600">Start your learning journey • Just now</p>
                     </div>
                   </div>
                 </div>
@@ -164,12 +184,12 @@ const Index = () => {
 
           {/* Learning Quests Tab */}
           <TabsContent value="quests">
-            <QuestModule userStats={userStats} setUserStats={setUserStats} />
+            <QuestModule userStats={userStats} />
           </TabsContent>
 
-          {/* News & Trends Tab (formerly Sandbox) */}
+          {/* News & Trends Tab */}
           <TabsContent value="sandbox">
-            <VirtualSandbox userStats={userStats} setUserStats={setUserStats} />
+            <VirtualSandbox userStats={userStats} />
           </TabsContent>
 
           {/* Community Hub Tab */}
@@ -179,6 +199,14 @@ const Index = () => {
         </Tabs>
       </div>
     </div>
+  );
+};
+
+const Index = () => {
+  return (
+    <AuthProvider>
+      <DashboardContent />
+    </AuthProvider>
   );
 };
 
