@@ -33,7 +33,7 @@ export default function QuestForm({ quest, categories, onSubmit, onCancel }: Que
     defaultValues: {
       title: quest?.title || '',
       description: quest?.description || '',
-      category_id: quest?.category_id || '',
+      category_id: quest?.category_id || 'none',
       reward_coins: quest?.reward_coins || 0,
       estimated_time: quest?.estimated_time || '',
       sort_order: quest?.sort_order || 0,
@@ -43,7 +43,12 @@ export default function QuestForm({ quest, categories, onSubmit, onCancel }: Que
 
   const handleSubmit = (data: QuestFormData) => {
     console.log('Form data being submitted:', data);
-    onSubmit(data);
+    // Convert 'none' back to empty string for the database
+    const submitData = {
+      ...data,
+      category_id: data.category_id === 'none' ? '' : data.category_id
+    };
+    onSubmit(submitData);
   };
 
   return (
@@ -111,7 +116,7 @@ export default function QuestForm({ quest, categories, onSubmit, onCancel }: Que
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">No Category</SelectItem>
+                    <SelectItem value="none">No Category</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
