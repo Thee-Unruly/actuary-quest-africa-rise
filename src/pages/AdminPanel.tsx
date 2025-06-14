@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,7 +17,7 @@ export default function AdminPanel() {
     (profile?.role === "admin") ||
     (user?.email && user.email.toLowerCase() === "admin@gmail.com");
 
-  // Helpful debug information for you
+  // Extra debug info
   console.log("AdminPanel: user", user);
   console.log("AdminPanel: profile", profile);
   console.log("AdminPanel: loading", loading);
@@ -32,11 +31,15 @@ export default function AdminPanel() {
     }
   }, [user, profile, loading, isAdmin, navigate]);
 
-  // Show loading status
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-orange-50">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-orange-50">
         <span className="text-orange-500 font-medium">Checking admin access...</span>
+        <div className="mt-2 text-xs text-gray-400">
+          Loading: {String(loading)}<br/>
+          User: {user?.email || "none"}<br/>
+          Profile role: {profile?.role || "none"}
+        </div>
       </div>
     );
   }
@@ -50,6 +53,10 @@ export default function AdminPanel() {
           Please contact support or try re-registering.
         </span>
         <span className="text-gray-500 text-xs">If you are admin@gmail.com, please contact us if the problem persists.</span>
+        <div className="mt-2 text-xs text-gray-400">
+          Debug: user = {JSON.stringify(user)}<br/>
+          loading = {String(loading)}
+        </div>
       </div>
     );
   }
@@ -62,6 +69,10 @@ export default function AdminPanel() {
           Access Denied. You are not an admin.<br />
           (Logged in as: {user?.email ?? "unknown"})
         </span>
+        <div className="mt-2 text-xs text-gray-400">
+          Debug: user = {JSON.stringify(user)}<br/>
+          profile = {JSON.stringify(profile)}
+        </div>
       </div>
     );
   }
@@ -110,7 +121,6 @@ export default function AdminPanel() {
           </TabsList>
           <TabsContent value="quests">
             <div className="mt-6">
-              {/* Placeholder for learning quests management */}
               <Card>
                 <CardHeader>
                   <CardTitle>Manage Learning Quests</CardTitle>
