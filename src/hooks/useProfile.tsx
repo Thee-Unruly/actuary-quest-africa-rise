@@ -24,25 +24,16 @@ export const useProfile = () => {
     if (!user) return;
 
     try {
-      console.log('Fetching profile for user:', user.id);
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .maybeSingle();
+        .single();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-        throw error;
-      }
-      
-      console.log('Profile fetched:', data);
+      if (error) throw error;
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
-      // Don't throw the error, just log it
-      setProfile(null);
     } finally {
       setLoading(false);
     }
@@ -52,8 +43,6 @@ export const useProfile = () => {
     if (!user) return;
 
     try {
-      console.log('Updating profile for user:', user.id, updates);
-      
       const { error } = await supabase
         .from('profiles')
         .update(updates)
@@ -62,7 +51,6 @@ export const useProfile = () => {
       if (error) throw error;
       
       setProfile(prev => prev ? { ...prev, ...updates } : null);
-      console.log('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
       throw error;
