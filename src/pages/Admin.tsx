@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,9 +11,9 @@ import { Settings, BookOpen, Newspaper, Plus, Trash2 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthPage } from "@/components/AuthPage";
 import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
+import { Navigate } from "react-router-dom";
 
 type QuestDifficulty = Database['public']['Enums']['quest_difficulty'];
 
@@ -48,8 +47,9 @@ const Admin = () => {
   const [quests, setQuests] = useState([]);
   const [news, setNews] = useState([]);
 
-  if (!user) {
-    return <AuthPage />;
+  // If not logged in, redirect to home
+  if (!user && !loading) {
+    return <Navigate to="/" replace />;
   }
 
   if (loading) {
@@ -65,7 +65,7 @@ const Admin = () => {
     );
   }
 
-  // Check if user is admin (for now, we'll allow all users - you can add role checking later)
+  // Check if user is admin or instructor
   if (profile?.role !== 'admin' && profile?.role !== 'instructor') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center">
@@ -76,8 +76,18 @@ const Admin = () => {
               You need admin or instructor privileges to access this page.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
-            <Button onClick={() => window.history.back()}>Go Back</Button>
+          <CardContent className="text-center space-y-4">
+            <p className="text-sm text-gray-600">
+              Current role: {profile?.role || 'No role assigned'}
+            </p>
+            <div className="space-y-2">
+              <Button onClick={() => window.location.href = "/"} className="w-full">
+                Go to Dashboard
+              </Button>
+              <p className="text-xs text-gray-500">
+                Contact an administrator to get admin access
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
