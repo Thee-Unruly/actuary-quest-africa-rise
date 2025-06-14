@@ -14,6 +14,9 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthPage } from "@/components/AuthPage";
 import { useToast } from "@/hooks/use-toast";
+import { Database } from "@/integrations/supabase/types";
+
+type QuestDifficulty = Database['public']['Enums']['quest_difficulty'];
 
 const Admin = () => {
   const { user } = useAuth();
@@ -25,7 +28,7 @@ const Admin = () => {
   const [questForm, setQuestForm] = useState({
     title: "",
     description: "",
-    difficulty: "beginner",
+    difficulty: "beginner" as QuestDifficulty,
     estimated_time: "",
     reward_coins: 0,
     content: ""
@@ -86,14 +89,14 @@ const Admin = () => {
     try {
       const { error } = await supabase
         .from('quests')
-        .insert([{
+        .insert({
           title: questForm.title,
           description: questForm.description,
           difficulty: questForm.difficulty,
           estimated_time: questForm.estimated_time,
           reward_coins: questForm.reward_coins,
           content: { type: "text", data: questForm.content }
-        }]);
+        });
 
       if (error) throw error;
       
@@ -105,7 +108,7 @@ const Admin = () => {
       setQuestForm({
         title: "",
         description: "",
-        difficulty: "beginner",
+        difficulty: "beginner" as QuestDifficulty,
         estimated_time: "",
         reward_coins: 0,
         content: ""
@@ -127,7 +130,7 @@ const Admin = () => {
     try {
       const { error } = await supabase
         .from('news_articles')
-        .insert([{
+        .insert({
           title: newsForm.title,
           summary: newsForm.summary,
           content: newsForm.content,
@@ -135,7 +138,7 @@ const Admin = () => {
           author: newsForm.author,
           external_url: newsForm.external_url,
           published_at: new Date().toISOString()
-        }]);
+        });
 
       if (error) throw error;
       
@@ -304,7 +307,7 @@ const Admin = () => {
                         <Label htmlFor="quest-difficulty">Difficulty</Label>
                         <Select
                           value={questForm.difficulty}
-                          onValueChange={(value) => setQuestForm({...questForm, difficulty: value})}
+                          onValueChange={(value: QuestDifficulty) => setQuestForm({...questForm, difficulty: value})}
                         >
                           <SelectTrigger>
                             <SelectValue />
